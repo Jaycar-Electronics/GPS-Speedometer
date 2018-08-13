@@ -93,32 +93,34 @@ void loop() {
 
   //state machine: do what we need to in each mode.
   
-  if(kp_mode){ //keypad mode, entering in refuel
-    process_keypad();
+  if(KP_mode){ //keypad mode, entering in refuel
+    //process_keypad();
   }
   else
   { //normal mode, displaying MPG
     
      if(touch(BUTTON_POSITION)){
        //change to KP mode
-       kp_mode = true;
+       KP_mode = true;
      }
 
      
   }
  
   //handles the screen display depending on which mode
-	displayScreen(kp_mode);
+	displayScreen(KP_mode);
 }
 
 void processGPS(gps_fix fix){
   //here we write to a file,
 
-  if(fix.valid.location && )
+  if(fix.valid.location )
 
-  current_ECON =
+  current_ECON = 0;
   ECON_dirty = true;
 }
+
+void draw_kp(){};
 
 void draw_hid(){
 
