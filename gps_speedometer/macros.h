@@ -2,8 +2,19 @@
 #define _MACROS_H__
 
 // this is a macro file to define some quick and easy commands
-//
-//
+
+// STRINGS
+#define STR_TITLE   F("Duinotech GPS")
+#define STR_CARD    F("Card")
+#define STR_NOCARD  F("NoCard")
+#define STR_LATITUDE  F("lat:")
+#define STR_LONGITUDE F("lon:")
+#define STR_KMPH      F("kmph")
+#define STR_START_TRIP  F("Start Trip")
+#define STR_STOP_TRIP   F("Stop Trip")
+
+
+// COLOURS
 #define SET_BG_RED  disp.setBackColor(255, 0, 0)
 #define SET_BG_BLU  disp.setBackColor(0, 0, 255)
 #define SET_BG_GRN  disp.setBackColor(0, 255, 0)
