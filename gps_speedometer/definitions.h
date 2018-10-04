@@ -1,7 +1,16 @@
-#ifndef _MACROS_H__
-#define _MACROS_H__
+#ifndef _DEFINITIONS_H__
+#define _DEFINITIONS_H__ 
+
+#include <Arduino.h> 
+
 
 // this is a macro file to define some quick and easy commands
+
+//first thing is to "rename" the serial ports so they are easier to see apart
+//these are for the leonardo which has two serial ports
+#define GPS_SERIAL Serial1
+#define USB_SERIAL Serial
+
 
 // STRINGS
 #define STR_TITLE   F("Duinotech GPS")
@@ -33,5 +42,51 @@
 #define SET_FG_YEL  disp.setColor(255, 255, 0)
 #define SET_FG_WHT  disp.setColor(255, 255, 255)
 #define SET_FG_BLK  disp.setColor(0, 0, 0)
+
+//button +text position
+#define BUTTON_POSITION 20,250,220,300 
+#define BUTTON_TEXT_POSITION 30,265
+
+//status variables
+byte status_r = 0;
+
+#define get_status(n)  ((status_r>>n)& 1) //look up bitmasks if you want to know what we're doing here
+#define set_status(n) (status_r |= (1<<n))
+#define clr_status(n) (status_r &= ~(1<<n))
+#define tgl_status(n) (status_r ^= (1<<n))
+
+//following 8 bits maxium:
+#define S_FIX_CURRENT 0
+#define S_TRIP_STARTED 1
+#define S_SDCARD 2
+#define S_NULL 3
+#define S_NULL 4
+#define S_NULL 5
+#define S_REDRAW_BACK 6
+#define S_REDRAW_TEXT 7
+
+#define STR_BUF_SIZE 24
+
+
+typedef struct {
+	long lat;
+	long lon;
+	float speed;
+	long heading;
+	short sat_count;
+	//age of fix
+	unsigned long fixtime;
+	//datetime
+	unsigned short hour;
+	unsigned short minute;
+	unsigned short day;
+	unsigned short month;
+} info_t;
+
+//define draw commands, we will fill them out in functions.c
+void draw_hid();
+void draw_button();
+void update_fields();
+
 
 #endif

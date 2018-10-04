@@ -1,76 +1,38 @@
+
 #include <NMEAGPS.h>			//GPS library
 #include <SPI.h>				  //
 #include <UTFTGLUE.h>     //we are using UTFT display methods
 #include <SdFat.h>				//sd fat for SD card access
-#include "macros.h"
 
-//there's multiple things going on in this code
-
-//first thing is to "rename" the serial ports so they are easier to see apart
-//these are for the leonardo which has two serial ports
-#define GPS_SERIAL Serial1
-#define USB_SERIAL Serial
+#define CHAR_WIDTH 6   	//default GFX_lib values, do not change
+#define CHAR_HEIGHT 8    
+#define SCREEN_WIDTH 240
+#define SCREEN_HEIGHT 320
+// ------------------------------------------------------------------
+// ------------------------------------------ Global Module Variables
+// ------------------------------------------------------------------
 
 //These following lines are for SD card access
 #define USE_SDIO 0
 SdFatSoftSpi<12, 11, 13> sdcard; //define a Software SD interface.
 
-//the leonardo does NOT have the regular SPI interface on pins 11,12,13.
-//our shield expects there to be such, so we will use a "SoftSPI" interface
-//to emulate. this is slower but it still works.
-//arduino MEGA has the same problem (spi is on 51,52,53)
-//arduino uno does not have this problem. (spi is on 11,12,13 as expected)
+//display shield
+UTFTGLUE disp(0x9341, A2, A1, A3, A4, A0);
 
-//button +text position
-#define BUTTON_POSITION 20,250,220,300 
-#define BUTTON_TEXT_POSITION 30,265
+//gps module
+NMEAGPS gps;
 
-#define REDRAW_HID 2
-#define REDRAW_BUTTON 1
+#include "definitions.h"
+// ------------------------------------------------------------------
+// ----------------------------------------  Store Status Information
+// ------------------------------------------------------------------
 
-//global variables
-UTFTGLUE disp(0x9341, A2, A1, A3, A4, A0);	//display module shield
-NMEAGPS gps;								//gps module
-gps_fix current_fix;						//a "fix" is a gps reading of a fixed position.
+gps_fix latest_fix;			//a "fix" is a gps reading of a fixed position.
+info_t inf; 				//custom struct, check out definitions.h !
 
+// ------------------------------------------------------------------
+// ------------------------------------------------------------------
 
-
-//store some status information ####################################
-
-//position / speed
-long latitude = 0;			//long
-long longitude = 0;			//lat
-float speed = 0;		
-long heading = 0;			//direction
-short sat_count = 0;
-
-unsigned long fixtime;
-
-int hour = 0;
-int minute = 0 ; 
-int day = 0;
-int month = 0;
-
-#define REDRAW_HID 2
-#define REDRAW_BUTTON 1
-
-//status variables
-#define get_bit(n,x)  ((x>>n)& 1) //look up bitmasks if you want to know what we're doing here
-#define set_bit(n,x,b) (x &= ((~(1&b))<<n))
-byte status_reg;
-//following 8 bits maxium:
-#define S_FIX_CURRENT 0
-#define S_TRIP_STARTED 1
-#define S_SDCARD 2
-#define S_NULL 3
-#define S_NULL 4
-#define S_NULL 5
-#define S_NULL 6
-#define S_REDRAW 7
-
-//define draw commands, we will fill them out later
-void draw_hid();
-void draw_button();
 
 void setup() {
 
@@ -79,130 +41,168 @@ void setup() {
 	USB_SERIAL.begin(115200);
 
 	if(sdcard.begin(10)){ //pin 10 for SD card from shield.
-    set_bit(status_reg,S_SDCARD,1);
+
+		set_status(S_SDCARD); //we have card access
+
 	}
 	//set up the screen and clear
 	disp.InitLCD(PORTRAIT);
 	disp.clrScr();
-  
-  DEBUG_FILE = sdcard.open("debug.txt",FILE_WRITE);
-
 }
 
 void loop() {
 
-	//update the GPS Fix information
-/*
-	while(gps.available(GPS_SERIAL)){	//information on the GPS lines
-		current_fix = gps.read(); 		//read the gps snapshot
-*/
-	
 
-	while(GPS_SERIAL.available()){
-		byte c = GPS_SERIAL.read();
-		//print to file
-		if(DEBUG_FILE){
-			DEBUG_FILE.print(c);
-		}	
-		//send to gps
-		if(gps.decode(c) != NMEAGPS::DECODE_COMPLETED)
-			continue;
-
-		//---
-		//STORE INFORMATION
-		sat_count = gps.sat_count;		//get the number of satellites in range
-
-
-		if(current_fix.valid.location){ // check if the location is valid
-			latitude = current_fix.latitudeL();
-			longitude = current_fix.longitudeL();
-			fixtime = millis();			//get the current time that we got this information
-		}
-/*
-		if(current_fix.valid.time){
-			hour = current_fix.dateTime.hours;
-			minute = current_fix.dateTime.minutes;
-			day = current_fix.dateTime.date;
-			month = current_fix.dateTime.month;
-			redraw = REDRAW_HID;
-		}
-*/
-		if(current_fix.valid.speed)
-			speed = current_fix.speed_kph();
-
-		if(current_fix.valid.heading)
-			heading = current_fix.heading_cd();
-		
+	//check for GPS fix information
+	while(gps.available(GPS_SERIAL))
+	{
+		latest_fix = gps.read();
+		update_fields(&latest_fix, &inf); //store fix into info_t structure
+		inf.sat_count = gps.sat_count;
 	}
-  
-  draw_hid();
-  draw_button();
+
+	if(get_status(S_SDCARD)){
+		//write information to SD card
+	}
+
+	if(get_status(S_TRIP_STARTED)){
+		//trip information
+	}
+
+	
+	if(get_status(S_REDRAW_BACK)){
+		draw_button();
+	}
+
+	draw_hid();
 }
 
-// -------------------------------------------------------------------
-// draw_hid()
-// Draws the status information 
-// -------------------------------------------------------------------
-void draw_hid(){
-  /*
-	String topbar = "DUINOTECH GPS " + String((status_sdcard?"Card":"NoCard")) + "   Satellites: " + String(sat_count);
-
-	//we include spaces to clear out previous information
-	//String position = "lon: " + String(longitude) + "\nlat: " + String(latitude);
-
-	//String current_speed = String(speed);
-	//String time = String(hour) + ":" + String(minute);
-	//String date = String(day) + "/" + String(month);
-
-	//red top bar
+void draw_hid()
+{
+	//topbar
 	SET_BG_RED;
-	SET_FG_RED;
-	disp.fillRect(0,0,disp.width(),9); //top bar
-	disp.setTextSize(1);
 	SET_FG_WHT;
-	disp.print(topbar.c_str(), LEFT, 1);
 
-	//yellow/gray location
-	SET_BG_GRY;
-	SET_FG_GRY;
-	disp.fillRect(LEFT,10,disp.width(),25);
-  SET_FG_YEL;
-	disp.print(position.c_str(), LEFT, 10);
+	disp.setTextSize(1);
+	disp.print(F("Jaycar GPS Speedo              satt:    "),0,0);
+	disp.printNumI(inf.sat_count,222,0);
 
+	print_speed(100);
+	print_time(0,200,4);
+	print_date(120,200,4);
 
-	//white speed
+	print_latlong(0,8);
+
+	print_warning(192,24);
+
+	draw_button();
+}
+
+void print_time(unsigned short x, unsigned short y,unsigned short scale){
+	SET_FG_BLU;
+	disp.setTextSize(scale);
+	disp.printNumI(inf.hour,
+		x + (inf.hour>9? 0: CHAR_WIDTH*scale), //conditionally move position so single digit is closer
+		y);
+
+	disp.print(":",x + CHAR_WIDTH*scale*2, y);
+
+	if(inf.minute < 10){
+		disp.print("0",x+CHAR_WIDTH*scale*3,y);
+		disp.printNumI(inf.minute,x+CHAR_WIDTH*scale*4,y);
+	} else {
+		disp.printNumI(inf.minute,x+CHAR_WIDTH*scale*3,y);
+	}
+
+}
+void print_date(unsigned short x, unsigned short y,unsigned short scale){
+	SET_FG_GRN;
+	disp.setTextSize(scale);
+	disp.printNumI(inf.day,
+		x + (inf.day>9? 0: CHAR_WIDTH*scale), //conditionally move position so single digit is closer
+		y);
+
+	disp.print("/",x + CHAR_WIDTH*scale*2, y);
+
+	disp.printNumI(inf.month,x+CHAR_WIDTH*scale*3,y);
+
+}
+void print_speed(unsigned short y){
 	SET_BG_BLK;
 	SET_FG_WHT;
-	disp.setTextSize(7);
-	disp.print(current_speed.c_str(),LEFT,70);
-	disp.setTextSize(3);
-	disp.print(" kmph",100,140);
+	disp.setTextSize(8);
+	disp.printNumF(inf.speed,1,0,y); //one decimal point
 
+	disp.setTextSize(2);
+	disp.print(F("kmph"),SCREEN_WIDTH-CHAR_WIDTH*8,
+						y+8*CHAR_HEIGHT); //8 here refers to setTextSize(8)
+}
+
+void print_latlong(unsigned short x, unsigned short y){
+	
+	SET_BG_GRY;
 	SET_FG_YEL;
-	disp.setTextSize(3);
-	disp.print(time.c_str(),LEFT,200);
-	SET_FG_CYA;
-	disp.print(date.c_str(),150,200);
-*/
+	disp.setTextSize(1);
+	disp.print(F(" Latitude:"),x,y);
+	disp.print(F("Longitude:"),x,y+CHAR_HEIGHT);
+
+	disp.printNumF(inf.lat / 1000000, 7, x+10*CHAR_WIDTH,y);
+	disp.printNumF(inf.lon / 1000000, 7, x+10*CHAR_WIDTH,y+CHAR_HEIGHT);
+}
+
+void print_warning(unsigned short x, unsigned short y){
+
+	if(get_status(S_FIX_CURRENT)){
+		SET_BG_BLK;
+		SET_FG_BLK;
+	}
+	else{
+		SET_BG_RED;
+		SET_FG_YEL;
+	}
+	disp.setTextSize(8);
+	disp.print("!",x,y);
+}
+
+void update_fields(gps_fix *fix, info_t *inf){ 
+	/* ----
+	 * To understand this code a little more, read up on C pointers and addresses;
+	 */
+
+	if(fix->valid.location){ //valid location fix, update
+		inf->lat = fix->latitudeL();
+		inf->lon = fix->longitudeL();
+
+		//speed and heading relies on location, so we can
+		//update fixtime so that we know when the latest fix
+		//has been relating to position.
+		
+		inf->fixtime = millis();
+	}
+	
+	if(fix->valid.time){ //valid time fix, update
+		inf->hour 	= fix->dateTime.hours;
+		inf->minute = fix->dateTime.minutes;
+		inf->day	= fix->dateTime.date;
+		inf->month	= fix->dateTime.month;
+	}
+
+	if(fix->valid.speed){
+		inf->speed = fix->speed_kph();
+	}
+
+	if(fix->valid.heading){
+		inf->heading = fix->heading_cd();
+	}
+
+
 }
 
 void draw_button(){
-
-	if(status_trip_started){
-		SET_FG_RED;
-		SET_BG_RED;
-	}
-	else{
-		SET_FG_GRN;
-		SET_BG_GRN;
-	}
-
+	disp.setTextSize(3);
+	SET_BG_GRN;
+	SET_FG_GRN;
 	disp.fillRect(BUTTON_POSITION);
 	SET_FG_WHT;
-	disp.setTextSize(3);
-	disp.print(status_trip_started? "  End Trip":"Start Trip", //inline if statement: (question? "this if true" : "this if false")
-			BUTTON_TEXT_POSITION); //position of text
-
-	redraw = 0;	
+	disp.print("Start Trip",BUTTON_TEXT_POSITION);
 }
-
