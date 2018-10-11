@@ -4,10 +4,7 @@
 #include <UTFTGLUE.h>     //we are using UTFT display methods
 #include <SdFat.h>				//sd fat for SD card access
 
-#define CHAR_WIDTH 6   	//default GFX_lib values, do not change
-#define CHAR_HEIGHT 8    
-#define SCREEN_WIDTH 240
-#define SCREEN_HEIGHT 320
+
 // ------------------------------------------------------------------
 // ------------------------------------------ Global Module Variables
 // ------------------------------------------------------------------
@@ -28,7 +25,7 @@ NMEAGPS gps;
 // ------------------------------------------------------------------
 
 gps_fix latest_fix;			//a "fix" is a gps reading of a fixed position.
-info_t inf; 				//custom struct, check out definitions.h !
+info_t inf = {0,0,0,0,0,0,0,0,0,0}; 				//custom struct, check out definitions.h !
 
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
@@ -57,9 +54,10 @@ void loop() {
 	while(gps.available(GPS_SERIAL))
 	{
 		latest_fix = gps.read();
-		update_fields(&latest_fix, &inf); //store fix into info_t structure
+		update_fields(&latest_fix); //store fix into info_t structure
 		inf.sat_count = gps.sat_count;
 	}
+status_r = 0xFF;
 
 	if(get_status(S_SDCARD)){
 		//write information to SD card
@@ -69,37 +67,40 @@ void loop() {
 		//trip information
 	}
 
-	
-	if(get_status(S_REDRAW_BACK)){
-		draw_button();
-	}
-
 	draw_hid();
 }
 
 void draw_hid()
 {
+
 	//topbar
 	SET_BG_RED;
 	SET_FG_WHT;
-
 	disp.setTextSize(1);
 	disp.print(F("Jaycar GPS Speedo              satt:    "),0,0);
 	disp.printNumI(inf.sat_count,222,0);
 
-	print_speed(100);
-	print_time(0,200,4);
-	print_date(120,200,4);
 
-	print_latlong(0,8);
+	//if(get_status(D_SPEED))			//speed
+		print_speed(100);
 
-	print_warning(192,24);
+	if(get_status(D_TIME))			//time
+		print_time(0,200,4);
 
-	draw_button();
+	print_date(120,200,4);			//date
+
+	if(get_status(D_LATLON))		//lat long
+		print_latlong(0,8);
+
+	if(get_status(D_BUTTON))		//button
+		draw_button();
+	
+	print_warning(192,24);			//warning sign
 }
 
 void print_time(unsigned short x, unsigned short y,unsigned short scale){
 	SET_FG_BLU;
+  SET_BG_BLK;
 	disp.setTextSize(scale);
 	disp.printNumI(inf.hour,
 		x + (inf.hour>9? 0: CHAR_WIDTH*scale), //conditionally move position so single digit is closer
@@ -117,6 +118,7 @@ void print_time(unsigned short x, unsigned short y,unsigned short scale){
 }
 void print_date(unsigned short x, unsigned short y,unsigned short scale){
 	SET_FG_GRN;
+  SET_BG_BLK;
 	disp.setTextSize(scale);
 	disp.printNumI(inf.day,
 		x + (inf.day>9? 0: CHAR_WIDTH*scale), //conditionally move position so single digit is closer
@@ -152,47 +154,44 @@ void print_latlong(unsigned short x, unsigned short y){
 
 void print_warning(unsigned short x, unsigned short y){
 
-	if(get_status(S_FIX_CURRENT)){
-		SET_BG_BLK;
-		SET_FG_BLK;
-	}
-	else{
-		SET_BG_RED;
-		SET_FG_YEL;
-	}
+	if(get_status(S_FIX_CURRENT))
+		return;
+	
+	SET_BG_RED;
+	SET_FG_YEL;
 	disp.setTextSize(8);
 	disp.print("!",x,y);
 }
 
-void update_fields(gps_fix *fix, info_t *inf){ 
+void update_fields(gps_fix *fix){ 
 	/* ----
 	 * To understand this code a little more, read up on C pointers and addresses;
 	 */
 
 	if(fix->valid.location){ //valid location fix, update
-		inf->lat = fix->latitudeL();
-		inf->lon = fix->longitudeL();
+		inf.lat = fix->latitudeL();
+		inf.lon = fix->longitudeL();
 
 		//speed and heading relies on location, so we can
 		//update fixtime so that we know when the latest fix
 		//has been relating to position.
 		
-		inf->fixtime = millis();
+		inf.fixtime = millis();
 	}
 	
 	if(fix->valid.time){ //valid time fix, update
-		inf->hour 	= fix->dateTime.hours;
-		inf->minute = fix->dateTime.minutes;
-		inf->day	= fix->dateTime.date;
-		inf->month	= fix->dateTime.month;
+		inf.hour 	= fix->dateTime.hours;
+		inf.minute = fix->dateTime.minutes;
+		inf.day	= fix->dateTime.date;
+		inf.month	= fix->dateTime.month;
 	}
 
 	if(fix->valid.speed){
-		inf->speed = fix->speed_kph();
+		inf.speed = fix->speed_kph();
 	}
 
 	if(fix->valid.heading){
-		inf->heading = fix->heading_cd();
+		inf.heading = fix->heading_cd();
 	}
 
 

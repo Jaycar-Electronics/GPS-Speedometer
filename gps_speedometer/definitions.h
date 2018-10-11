@@ -8,8 +8,15 @@
 
 //first thing is to "rename" the serial ports so they are easier to see apart
 //these are for the leonardo which has two serial ports
+
 #define GPS_SERIAL Serial1
 #define USB_SERIAL Serial
+
+
+#define CHAR_WIDTH 6     //default GFX_lib values, do not change
+#define CHAR_HEIGHT 8    
+#define SCREEN_WIDTH 240
+#define SCREEN_HEIGHT 320
 
 
 // STRINGS
@@ -50,20 +57,21 @@
 //status variables
 byte status_r = 0;
 
-#define get_status(n)  ((status_r>>n)& 1) //look up bitmasks if you want to know what we're doing here
-#define set_status(n) (status_r |= (1<<n))
-#define clr_status(n) (status_r &= ~(1<<n))
-#define tgl_status(n) (status_r ^= (1<<n))
+#define get_status(n)  (status_r& n) //look up bitmasks if you want to know what we're doing here
+#define set_status(n) (status_r |= n)
+#define clr_status(n) (status_r &= ~n)
+#define tgl_status(n) (status_r ^= n)
 
 //following 8 bits maxium:
-#define S_FIX_CURRENT 0
-#define S_TRIP_STARTED 1
-#define S_SDCARD 2
-#define S_NULL 3
-#define S_NULL 4
-#define S_NULL 5
-#define S_REDRAW_BACK 6
-#define S_REDRAW_TEXT 7
+#define S_FIX_CURRENT   (1<<1)
+#define S_TRIP_STARTED  (1<<2)
+#define S_SDCARD		(1<<3) 
+#define S_NOTUSED			(1<<4)
+//redraw routines
+#define D_TIME  		(1<<5)
+#define D_LATLON 		(1<<6)
+#define D_BUTTON 		(1<<7)
+#define D_SPEED 		(1<<8)
 
 #define STR_BUF_SIZE 24
 
@@ -83,7 +91,7 @@ typedef struct {
 	unsigned short month;
 } info_t;
 
-//define draw commands, we will fill them out in functions.c
+//define draw commands, we will fill them out in the main 
 void draw_hid();
 void draw_button();
 void update_fields();
