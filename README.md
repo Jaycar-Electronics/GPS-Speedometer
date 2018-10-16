@@ -49,6 +49,7 @@ To make the unit neat and organised, we're attaching the GPS module underneath t
 First we'll use some single-sided tape to cover the connection pads that are at the bottom of the TFT screen.
 
 ![tape position](images/tape.jpg)
+
 _The tape is a bit transperent so we coloured it in for you_
 
 Next we'll remove the solder connections from the GPS module. `include link for howto`
@@ -56,11 +57,13 @@ Next we'll remove the solder connections from the GPS module. `include link for 
 Then attach the module board to the underside of the TFT screen, in a suitable location, and solder the wires to where they have to go. For this, I used wire-wrap, which is very small, and fairly easy to work with if you manage to strip them without cutting the super-thin cable.
 
 ![connections](images/connections.jpg)
-_picture including wirewrap_
+
+_Connections to the GPS module that has been double-sided taped to the TFT module_
 
 the only final thing is the antenna. There's two locations for this, depending on whether you want to mangle your Leonardo or not. I opted to do it, by removing the ISCP connector from the Leonardo, giving room for the antenna to sit underneath the bottom of the TFT screen and using a small bit of tape to keep it in place. you can also sit it out to the side if you want, but be sure not to bump it around too much as the antenna lead is very thin and not designed to take stress.
 
 ![antenna](images/ant1.jpg)
+
 _Picture of how we set it up by removing the ISCP. if you don't want to remove the ISCP, you can use the alternative position but it's recommended to support the antenna in some way so it doesn't move around_
 
 That's it! you're done.
