@@ -2,6 +2,11 @@
 
 Using our Arduino-compatible GPS module and TFT Screen, this project displays basic GPS information such as longitude, latitude, altitude, speed, and distance travelled from point A to B. Information are stored on an SD card which can be exported and viewed via Google Maps. Powered from a micro-USB for easy powering off your phone charger while you’re in the car.			
 
+* Due to the limited size of the Arduino, we've separated the code into two code blocks:
+    * `gps_speedo` for the gps speedometer
+    * `gps_recorder` record the gps trip
+* while it *is* possible to fit the two into one sketch, it's a tight fit and not very suitable for beginners. You are welcome to try though and see what you can conjure up. We've found this way is simple and easy.
+
 ## Bill of Materials
 | Qty | Product | Description |
 | --- | ---- | --- |
@@ -22,13 +27,20 @@ _Version numbers are at the time of this guide and might or might not work with 
 | Library | Author |  Version |
 | :---|:--- | --- |
 | NeoGps | SlashDevin | 4.2.9 |
+| NeoHWSerial | SlashDevin | Latest Github https://github.com/SlashDevin/NeoHWSerial |
 | MCUFRIEND_kbv | David Prentice | 2.9.8 |
 | SdFat | Bill Greiman | 1.0.7 |
 
 
 #### Notes
 
-* **MCUFRIEND_kbv** needs to be modified to work with our TFT module.
+* **NeoGps** and **NeoHWSerial** are needed to run the GPS module, the **NeoHWSerial** library is a custom library that isn't yet in the library manager, but is needed to enable interrupt processing on the `Serial` line. You must also modify line 150 of `NMEAGPS_cfg.h` to read:
+
+```
+#define NMEAGPS_INTERRUPT_PROCESSING
+```
+
+* **MCUFRIEND_kbv** needs to be modified to work with our TFT module. Read more [Here](https://github.com/Jaycar-Electronics/databook/blob/master/modules/XC4630.md)
 
 * **SdFat** provides us with an interface to `FAT32` filesystems _as well as_ provides a **SoftwareSPI** bus. We use 'SoftSPI' due to the case that Leonardo does not have the SPI pins on 10~13 as traditional UNOs do. This library is perfect for our needs.
 
