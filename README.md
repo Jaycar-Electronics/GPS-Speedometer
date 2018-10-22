@@ -5,7 +5,7 @@ Using our Arduino-compatible GPS module and TFT Screen, this project displays ba
 * Due to the limited size of the Arduino, we've separated the code into two code blocks:
     * `gps_speedo` for the gps speedometer
     * `gps_recorder` record the gps trip
-* while it *is* possible to fit the two into one sketch, it's a tight fit and not very suitable for beginners. You are welcome to try though and see what you can conjure up. We've found this way is simple and easy.
+* while it *is* possible to fit the two into one sketch, it's a tight fit and not very suitable for beginners. You are welcome to try though and see what you can conjure up. We've found this way is simpler and easy for you to dig through without having to worry about removing bootloaders or otherwise.
 
 ## Bill of Materials
 | Qty | Product | Description |
@@ -86,13 +86,14 @@ That's it! you're done.
 
 Programming has been done for you, so simply download the code and upload from the Arduino. Make sure to select the correct board ( `Yun` or `Leonardo`) and the correct Port.
 
-At the top of the code is `TZ_OFFSET` which is set to `600` - this is 600 minutes from UTC, or +10 hours `AEDT` for Sydney daylight saving time. Use this to change your Time zone so it shows the correct time, for instance:
-* if you are in Brisbane: you can use `+11 * 60 = 660` for `AEST`
-* If you are in Washington (daylight saving): you can use `-4 * 60 = -240` for `EDT`
+At the top of the code is `TZ_OFFSET` which is set to `39600` - this is 39600 seconds from UTC, or +11 hours `AEDT` for Sydney daylight saving time. Use this to change your Time zone so it shows the correct time, for instance:
+* if you are in Brisbane: you can use `+11 * 60 *60 = 39600` for `AEST`
+* If you are in Washington (daylight saving): you can use `-4 * 60 * 60 = -14400` for `EDT`
 
 ## Use
 
-The program will boot up and automatically tell you your location and speed. When you press the record button it will start logging your trip info to SD card, which you can then use the `converter.py` to convert to standard `KVML` format as used by Google Maps.
+The `GPS_speedo` program will boot up and automatically tell you your location and speed.
+`GPS_recorder` will log your trip info to SD card with standard `KVML` format as used by Google Maps.
 
 ## Contribution
 
