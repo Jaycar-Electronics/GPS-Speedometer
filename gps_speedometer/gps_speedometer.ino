@@ -2,23 +2,21 @@
 #include <GPSport.h>      //switches on the above
 #include <NMEAGPS.h>			//GPS library
 #include <UTFTGLUE.h>     //we are using UTFT display methods
-#include <SdFat.h>				//sd fat for SD card access
 
 
 // Check configuration
 #ifndef NMEAGPS_INTERRUPT_PROCESSING
   #error You must define NMEAGPS_INTERRUPT_PROCESSING in documents/arduino/libaries/neogps/NMEAGPS_cfg.h!
 #endif
-
+#ifdef ARDUINO_AVR_UNO
+	#error Compiling for the wrong board! change board to Arduino Leonardo or yun
+#endif
 
 #define TZ_OFFSET  39600 //+11 hours. (+- hours*3600)
 // ------------------------------------------------------------------
 // ------------------------------------------ Global Module Variables
 // ------------------------------------------------------------------
 
-//These following lines are for SD card access
-#define USE_SDIO 0
-SdFatSoftSpi<12, 11, 13> sdcard; //define a Software SD interface.
 
 //display shield
 UTFTGLUE disp(0x9341, A2, A1, A3, A4, A0);
@@ -70,7 +68,7 @@ void loop() {
 
 
 	//check for GPS fix information
-	if(gps.available(GPS_SERIAL)){
+	if(gps.available()){
 		update_fields(gps.read()); //store fix into info_t structure
 		inf.sat_count = gps.sat_count;
 		fix_current = true;
