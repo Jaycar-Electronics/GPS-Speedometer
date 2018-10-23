@@ -5,7 +5,7 @@ Using our Arduino-compatible GPS module and TFT Screen, this project displays ba
 * Due to the limited size of the Arduino, we've separated the code into two code blocks:
     * `gps_speedo` for the gps speedometer
     * `gps_recorder` record the gps trip
-* while it *is* possible to fit the two into one sketch, it's a tight fit and not very suitable for beginners. You are welcome to try though and see what you can conjure up. We've found this way is simpler and easy for you to dig through without having to worry about removing bootloaders or otherwise.
+* While it *is* possible to fit the two into one sketch, it's a tight fit and not very suitable for beginners. You are welcome to try though and see what you can conjure up. We've found this way is simpler and easy for you to dig through without having to worry about removing bootloaders or otherwise.
 
 ## Bill of Materials
 | Qty | Product | Description |
@@ -17,9 +17,9 @@ Using our Arduino-compatible GPS module and TFT Screen, this project displays ba
 
 #### Suggested Extras
 * [WW4345](https://jaycar.com.au/p/WW4345) Wire wrap (use any colour)
-  * Very thin wire that's perfect for small builds.
+    * Very thin wire that's perfect for small builds.
 * [XC4983](https://jaycar.com.au/p/XC4983) 8GB SD card.
-  * Use for logging GPS data.
+    * Use for logging GPS data.
 
 ## Required Software and Libraries
 _Version numbers are at the time of this guide and might or might not work with later version._
@@ -62,7 +62,7 @@ First we'll use some single-sided tape to cover the connection pads that are at 
 
 ![tape position](images/tape.jpg)
 
-_The tape is a bit transperent so we coloured it in for you_
+_The tape is a bit transparent so we coloured it in for you_
 
 Next we'll remove the solder connections from the GPS module. `include link for howto`
 
@@ -72,7 +72,7 @@ Then attach the module board to the underside of the TFT screen, in a suitable l
 
 _Connections to the GPS module that has been double-sided taped to the TFT module_
 
-the only final thing is the antenna. There's two locations for this, depending on whether you want to mangle your Leonardo or not. I opted to do it, by removing the ISCP connector from the Leonardo, giving room for the antenna to sit underneath the bottom of the TFT screen and using a small bit of tape to keep it in place. you can also sit it out to the side if you want, but be sure not to bump it around too much as the antenna lead is very thin and not designed to take stress.
+The only final thing is the antenna. There's two locations for this, depending on whether you want to mangle your Leonardo or not. I opted to do it, by removing the ISCP connector from the Leonardo, giving room for the antenna to sit underneath the bottom of the TFT screen and using a small bit of tape to keep it in place. you can also sit it out to the side if you want, but be sure not to bump it around too much as the antenna lead is very thin and not designed to take stress.
 
 ![antenna](images/ant1.jpg)
 
@@ -87,8 +87,11 @@ That's it! you're done.
 Programming has been done for you, so simply download the code and upload from the Arduino. Make sure to select the correct board ( `Yun` or `Leonardo`) and the correct Port.
 
 At the top of the code is `TZ_OFFSET` which is set to `39600` - this is 39600 seconds from UTC, or +11 hours `AEDT` for Sydney daylight saving time. Use this to change your Time zone so it shows the correct time, for instance:
-* if you are in Brisbane: you can use `+11 * 60 *60 = 39600` for `AEST`
+
+* If you are in Brisbane: you can use `+11 * 60 *60 = 39600` for `AEST`
+
 * If you are in Washington (daylight saving): you can use `-4 * 60 * 60 = -14400` for `EDT`
+
 
 ## Use
 
