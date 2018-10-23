@@ -64,7 +64,7 @@ First we'll use some single-sided tape to cover the connection pads that are at 
 
 _The tape is a bit transparent so we coloured it in for you_
 
-Next we'll remove the solder connections from the GPS module. `include link for howto`
+Next we'll remove the solder connections from the GPS module, if you're unsure, follow the [Guide](https://github.com/Jaycar-Electronics/databook/blob/master/tutorial/Removing%20Headers.md)
 
 Then attach the module board to the underside of the TFT screen, in a suitable location, and solder the wires to where they have to go. For this, I used wire-wrap, which is very small, and fairly easy to work with if you manage to strip them without cutting the super-thin cable.
 
