@@ -34,11 +34,21 @@ _Version numbers are at the time of this guide and might or might not work with 
 
 #### Notes
 
-* **NeoGps** and **NeoHWSerial** are needed to run the GPS module, the **NeoHWSerial** library is a custom library that isn't yet in the library manager, but is needed to enable interrupt processing on the `Serial` line. You must also modify line 150 of `NMEAGPS_cfg.h` to read:
+* **NeoGps** and **NeoHWSerial** are needed to run the GPS module, the **NeoHWSerial** library is a custom library that isn't yet in the library manager, but is needed to enable interrupt processing on the `Serial` line. 
+
+* You must modify line 150 of `NMEAGPS_cfg.h` to read:
 
 ```
 #define NMEAGPS_INTERRUPT_PROCESSING
 ```
+
+* You must also modify 159-161 of `GPSport.h` to read:
+```c
+  #include <NeoHWSerial.h>    // NeoSerial or NeoSerial1 Interrupt-style processing
+  //#include <AltSoftSerial.h>    // <-- DEFAULT.  Two specific pins required
+  //#include <NeoICSerial.h>    // AltSoftSerial with Interrupt-style processing (see docs)
+```
+
 
 * **MCUFRIEND_kbv** needs to be modified to work with our TFT module. Read more [Here](https://github.com/Jaycar-Electronics/databook/blob/master/modules/XC4630.md)
 

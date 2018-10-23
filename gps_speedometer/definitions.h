@@ -6,17 +6,7 @@
 
 // this is a macro file to define some quick and easy commands
 
-//first thing is to "rename" the serial ports so they are easier to see apart
-//these are for the leonardo which has two serial ports
 
-#define GPS_SERIAL NeoSerial1
-#define USB_SERIAL Serial
-
-
-// Check configuration
-#ifndef NMEAGPS_INTERRUPT_PROCESSING
-  #error You must define NMEAGPS_INTERRUPT_PROCESSING in documents/arduino/libaries/neogps/NMEAGPS_cfg.h!
-#endif
 
 #define CHAR_WIDTH 6     //default GFX_lib values, do not change
 #define CHAR_HEIGHT 8    

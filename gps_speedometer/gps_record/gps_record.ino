@@ -1,5 +1,6 @@
 #include <SPI.h>				  //
 #include <SdFat.h>				//sd fat for SD card access
+#include <NeoGPS.h>
 
 #define GPS_SERIAL Serial1
 #define USB_SERIAL Serial
@@ -16,7 +17,6 @@ void setup() {
 	USB_SERIAL.begin(115200);
 
 	sdcard.begin(10);
-	
 
 }
 char buffer[24];

@@ -5,6 +5,12 @@
 #include <SdFat.h>				//sd fat for SD card access
 
 
+// Check configuration
+#ifndef NMEAGPS_INTERRUPT_PROCESSING
+  #error You must define NMEAGPS_INTERRUPT_PROCESSING in documents/arduino/libaries/neogps/NMEAGPS_cfg.h!
+#endif
+
+
 #define TZ_OFFSET  39600 //+11 hours. (+- hours*3600)
 // ------------------------------------------------------------------
 // ------------------------------------------ Global Module Variables
@@ -24,6 +30,12 @@ bool fix_current = false;
 
 #include "definitions.h" //helper functions and etc.
 
+
+//first thing is to "rename" the serial ports so they are easier to see apart
+//these are for the leonardo which has two serial ports
+#define GPS_SERIAL NeoSerial1
+#define USB_SERIAL Serial
+
 // ------------------------------------------------------------------
 // ----------------------------------------  Store Status Information
 // ------------------------------------------------------------------
@@ -34,7 +46,7 @@ info_t inf = {0,0,0,0,0,0,0,0,0,0}; 				//custom struct, check out definitions.h
 // ------------------------------------------------------------------
 
 static void gps_isr(char c){                //gps interrupt service routine
-  gps.handle(c);
+	gps.handle(c);
 }
 
 // ------------------------------------------------------------------
@@ -43,7 +55,7 @@ static void gps_isr(char c){                //gps interrupt service routine
 void setup() {
 
 	//initialise GPS and USB serials
-  GPS_SERIAL.attachInterrupt(gps_isr);
+	GPS_SERIAL.attachInterrupt(gps_isr);
 	GPS_SERIAL.begin(9600);
 	USB_SERIAL.begin(115200);
 
@@ -61,13 +73,13 @@ void loop() {
 	if(gps.available(GPS_SERIAL)){
 		update_fields(gps.read()); //store fix into info_t structure
 		inf.sat_count = gps.sat_count;
-    fix_current = true;
+		fix_current = true;
 	}
- 
-  if (inf.fixtime - millis() > 60000){
-    fix_current = false;
-  }
-  
+
+	if (inf.fixtime - millis() > 60000){
+		fix_current = false;
+	}
+
 	draw_hid();
 }
 // ------------------------------------------------------------------
@@ -75,7 +87,6 @@ void loop() {
 // ------------------------------------------------------------------
 void draw_hid()
 {
-
 	//topbar
 	SET_BG_RED;
 	SET_FG_WHT;
@@ -84,7 +95,7 @@ void draw_hid()
 	disp.printNumI(inf.sat_count,222,0);
 
 	print_speed(100);
-  print_time(60,200,4);
+	print_time(60,200,4);
 
 	print_date(60,250,4);			//date
 
@@ -94,11 +105,11 @@ void draw_hid()
 
 void print_time(unsigned short x, unsigned short y,unsigned short scale){
 	SET_FG_BLU;
-  SET_BG_BLK;
+	SET_BG_BLK;
 	disp.setTextSize(scale);
 	disp.printNumI(inf.hour,
-		x + (inf.hour>9? 0: CHAR_WIDTH*scale), //conditionally move position so single digit is closer
-		y);
+			x + (inf.hour>9? 0: CHAR_WIDTH*scale), //conditionally move position so single digit is closer
+			y);
 
 	disp.print(":",x + CHAR_WIDTH*scale*2, y);
 
@@ -112,11 +123,11 @@ void print_time(unsigned short x, unsigned short y,unsigned short scale){
 }
 void print_date(unsigned short x, unsigned short y,unsigned short scale){
 	SET_FG_GRN;
-  SET_BG_BLK;
+	SET_BG_BLK;
 	disp.setTextSize(scale);
 	disp.printNumI(inf.day,
-		x + (inf.day>9? 0: CHAR_WIDTH*scale), //conditionally move position so single digit is closer
-		y);
+			x + (inf.day>9? 0: CHAR_WIDTH*scale), //conditionally move position so single digit is closer
+			y);
 
 	disp.print("/",x + CHAR_WIDTH*scale*2, y);
 
@@ -131,11 +142,11 @@ void print_speed(unsigned short y){
 
 	disp.setTextSize(2);
 	disp.print(F("kmph"),SCREEN_WIDTH-CHAR_WIDTH*8,
-						y+8*CHAR_HEIGHT); //8 here refers to setTextSize(8)
+			y+8*CHAR_HEIGHT); //8 here refers to setTextSize(8)
 }
 
 void print_latlong(unsigned short x, unsigned short y){
-	
+
 	SET_BG_GRY;
 	SET_FG_YEL;
 	disp.setTextSize(1);
@@ -149,14 +160,14 @@ void print_latlong(unsigned short x, unsigned short y){
 void print_warning(unsigned short x, unsigned short y){
 
 	if(fix_current){
-    SET_BG_BLK;
-    SET_FG_BLK;
+		SET_BG_BLK;
+		SET_FG_BLK;
 	}
-  else{
-    SET_BG_RED;
-    SET_FG_YEL;
-  }
-	
+	else{
+		SET_BG_RED;
+		SET_FG_YEL;
+	}
+
 	disp.setTextSize(8);
 	disp.print("!",x,y);
 }
@@ -173,14 +184,14 @@ void update_fields(const gps_fix &fix){
 		//has been relating to position.
 		inf.fixtime = millis();
 	}
-	
+
 	if(fix.valid.time){ //valid time fix, update
-    
-    //tz convert
-    NeoGPS::clock_t seconds = fix.dateTime;
-    seconds += TZ_OFFSET;
-    NeoGPS::time_t dateTime = seconds;
-    
+
+		//tz convert
+		NeoGPS::clock_t seconds = fix.dateTime;
+		seconds += TZ_OFFSET;
+		NeoGPS::time_t dateTime = seconds;
+
 		inf.hour 	= dateTime.hours;
 		inf.minute = dateTime.minutes;
 		inf.day	= dateTime.date;
