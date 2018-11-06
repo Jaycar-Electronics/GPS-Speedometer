@@ -49,10 +49,14 @@ _Version numbers are at the time of this guide and might or might not work with 
   //#include <NeoICSerial.h>    // AltSoftSerial with Interrupt-style processing (see docs)
 ```
 
-
 * **MCUFRIEND_kbv** needs to be modified to work with our TFT module. Read more [Here](https://github.com/Jaycar-Electronics/databook/blob/master/modules/XC4630.md)
 
 * **SdFat** provides us with an interface to `FAT32` filesystems _as well as_ provides a **SoftwareSPI** bus. We use 'SoftSPI' due to the case that Leonardo does not have the SPI pins on 10~13 as traditional UNOs do. This library is perfect for our needs.
+
+* To enable, change line 85 of `documents/libraries/SdFat/src/SdFatConfig.h` to read:
+```c
+#define ENABLE_SOFTWARE_SPI_CLASS 1
+```
 
 ## Connection Table
 
